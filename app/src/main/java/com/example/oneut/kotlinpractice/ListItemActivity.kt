@@ -12,7 +12,6 @@ import org.jetbrains.anko.*
 
 class ListItemActivity : AppCompatActivity() {
 
-    private val itemActionCreator = ItemActionCreator(ItemStore)
     private lateinit var subject: PublishSubject<Long>
     private lateinit var textView: TextView
 
@@ -26,7 +25,7 @@ class ListItemActivity : AppCompatActivity() {
 
     private fun initialize() {
         subject = ItemSubject().create(this, { item: HashMap<String, String> ->
-            itemActionCreator.sync(item)
+            ItemActionCreator.sync(item)
         })
     }
 

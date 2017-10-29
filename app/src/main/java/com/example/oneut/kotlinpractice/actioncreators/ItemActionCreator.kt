@@ -1,11 +1,10 @@
 package com.example.oneut.kotlinpractice.actioncreators
 
 import com.example.oneut.kotlinpractice.actions.ItemAction
-import com.example.oneut.kotlinpractice.util.flux.Store
-import com.example.oneut.kotlinpractice.states.ItemState
+import com.example.oneut.kotlinpractice.stores.ItemStore
 
-class ItemActionCreator(private val store: Store<ItemState>) {
+object ItemActionCreator {
     fun sync(item: HashMap<String, String>) {
-        store.dispatch(ItemAction.Sync(item))
+        ItemStore.dispatch(ItemAction.Sync(item))
     }
 }
