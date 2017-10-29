@@ -5,7 +5,7 @@ import com.example.oneut.kotlinpractice.util.flux.Store
 import com.example.oneut.kotlinpractice.reducers.ItemsReducer
 import com.example.oneut.kotlinpractice.states.ItemsState
 
-class ItemsStore : Store<ItemsState>() {
+object ItemsStore : Store<ItemsState>() {
     override fun getReducer() : Reducer<ItemsState> {
         return ItemsReducer()
     }
