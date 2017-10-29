@@ -12,6 +12,7 @@ import com.example.oneut.kotlinpractice.api.hackernews.subjects.TopStoriesSubjec
 import com.example.oneut.kotlinpractice.stores.ItemsStore
 import com.example.oneut.kotlinpractice.util.arrayadapter.ListItem
 import com.example.oneut.kotlinpractice.util.arrayadapter.ListItemAdapter
+import com.example.oneut.kotlinpractice.util.flux.Container
 import com.mikepenz.iconics.Iconics
 import io.reactivex.subjects.PublishSubject
 import org.jetbrains.anko.*
@@ -23,39 +24,35 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var subject: PublishSubject<Int>
     private lateinit var itemsAdapter: ListItemAdapter<_LinearLayout>
-    private lateinit var itemActionCreator: ItemsActionCreator
-    private lateinit var store: ItemsStore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         this.initialize()
         this.createView()
+        this.createContainer()
+        subject.onNext(1)
     }
 
     private fun initialize() {
-        store = ItemsStore()
-        store.subscribe { state ->
+        itemsAdapter = ItemsAdapter(this, ArrayList<Item>())
+        subject = TopStoriesSubject().create(this, { item ->
+            ItemsActionCreator.add(item)
+        })
+    }
+
+    private fun createContainer() {
+        val container = Container(arrayListOf(ItemsStore))
+        container.subscribe {
+            val state = ItemsStore.getState()
             val items = state.items.map { item ->
                 Item(item)
             }
 
-            this.setUpView(items)
+            itemsAdapter.clear()
+            itemsAdapter.addAll(items)
+            itemsAdapter.notifyDataSetChanged()
+            toast("List Updated")
         }
-        itemActionCreator = ItemsActionCreator(store)
-
-        itemsAdapter = ItemsAdapter(this, ArrayList<Item>())
-        subject = TopStoriesSubject().create(this, { item ->
-            itemActionCreator.add(item)
-        })
-
-        subject.onNext(1)
-    }
-
-    private fun setUpView(items: List<Item>) {
-        itemsAdapter.clear()
-        itemsAdapter.addAll(items)
-        itemsAdapter.notifyDataSetChanged()
-        toast("List Updated")
     }
 
     private fun createView() {
@@ -89,7 +86,7 @@ class MainActivity : AppCompatActivity() {
                 onClick {
                     val items = ArrayList<HashMap<String, String>>()
                     items.add(hashMapOf("title" to "hello"))
-                    itemActionCreator.addAll(items)
+                    ItemsActionCreator.addAll(items)
                 }
             }
 

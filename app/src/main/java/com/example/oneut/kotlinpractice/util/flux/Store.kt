@@ -1,9 +1,13 @@
 package com.example.oneut.kotlinpractice.util.flux
 
-abstract class Store<T> {
+interface StoreInterface {
+    fun subscribe(callback: () -> Unit)
+}
+
+abstract class Store<T> : StoreInterface {
     private val reducer: Reducer<T>
     private var state: T
-    private lateinit var callback: (T) -> Unit
+    private lateinit var callback: () -> Unit
 
     init {
         this.reducer = getReducer()
@@ -12,11 +16,15 @@ abstract class Store<T> {
 
     abstract fun getReducer() : Reducer<T>
 
+    fun getState() : T {
+        return this.state
+    }
+
     fun dispatch(action: Action) {
         val newState = this.reduce(this.state, action)
         if (state !== newState) {
             this.state = newState
-            this.callback(this.state)
+            this.callback()
         }
     }
 
@@ -24,7 +32,9 @@ abstract class Store<T> {
         return this.reducer.reduce(state, action)
     }
 
-    fun subscribe(callback: (T) -> Unit) {
+    override fun subscribe(callback: () -> Unit) {
         this.callback = callback
     }
+
+    // @todo unsubscribe
 }
