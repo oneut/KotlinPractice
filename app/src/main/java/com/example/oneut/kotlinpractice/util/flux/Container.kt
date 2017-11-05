@@ -1,13 +1,13 @@
 package com.example.oneut.kotlinpractice.util.flux
 
 class Container(private val stores: ArrayList<StoreInterface>) {
-    fun subscribe(callback: () -> Unit) {
-        stores.forEach { store ->
-            store.subscribe {
-                callback()
-            }
-        }
+    fun subscribe(subscriber: Subscriber) {
+        stores.forEach { store -> store.subscribe(subscriber) }
 
-        callback()
+        subscriber()
+    }
+
+    fun unsubscribe(subscriber: Subscriber) {
+        stores.forEach { store -> store.unsubscribe(subscriber) }
     }
 }

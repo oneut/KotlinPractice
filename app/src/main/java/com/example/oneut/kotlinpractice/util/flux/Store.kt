@@ -1,22 +1,24 @@
 package com.example.oneut.kotlinpractice.util.flux
 
+typealias Subscriber = () -> Unit
+
 interface StoreInterface {
-    fun subscribe(callback: () -> Unit)
+    fun subscribe(callback: Subscriber)
+    fun unsubscribe(callback: Subscriber)
 }
 
 abstract class Store<T> : StoreInterface {
-    private val reducer: Reducer<T>
     private var state: T
-    private lateinit var callback: () -> Unit
+    private val subscribers: ArrayList<Subscriber> = arrayListOf()
 
     init {
-        this.reducer = getReducer()
-        this.state = this.reducer.getInitialState()
+        this.state = this.getInitialState()
     }
 
-    abstract fun getReducer() : Reducer<T>
+    abstract fun getInitialState() : T
+    abstract fun reduce(state: T, action: Action): T
 
-    fun getState() : T {
+    fun getState(): T {
         return this.state
     }
 
@@ -24,17 +26,15 @@ abstract class Store<T> : StoreInterface {
         val newState = this.reduce(this.state, action)
         if (state !== newState) {
             this.state = newState
-            this.callback()
+            this.subscribers.forEach { subscriber -> subscriber() }
         }
     }
 
-    private fun reduce(state: T, action: Action) : T {
-        return this.reducer.reduce(state, action)
+    override fun subscribe(subscriber: Subscriber) {
+        this.subscribers += subscriber
     }
 
-    override fun subscribe(callback: () -> Unit) {
-        this.callback = callback
+    override fun unsubscribe(subscriber: Subscriber) {
+        this.subscribers -= subscriber
     }
-
-    // @todo unsubscribe
 }
