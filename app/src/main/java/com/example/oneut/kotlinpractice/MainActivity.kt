@@ -1,5 +1,6 @@
 package com.example.oneut.kotlinpractice
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
@@ -12,6 +13,7 @@ import com.example.oneut.kotlinpractice.api.hackernews.subjects.TopStoriesSubjec
 import com.example.oneut.kotlinpractice.stores.ItemsStore
 import com.example.oneut.kotlinpractice.util.arrayadapter.ListItem
 import com.example.oneut.kotlinpractice.util.arrayadapter.ListItemAdapter
+import com.example.oneut.kotlinpractice.util.flux.Subscriber
 import com.example.oneut.kotlinpractice.util.flux.Container
 import com.mikepenz.iconics.Iconics
 import io.reactivex.subjects.PublishSubject
@@ -19,42 +21,53 @@ import org.jetbrains.anko.*
 import org.jetbrains.anko.sdk25.coroutines.onClick
 import java.util.ArrayList
 import java.util.HashMap
+import javax.inject.Inject
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var subject: PublishSubject<Int>
     private lateinit var itemsAdapter: ListItemAdapter<_LinearLayout>
 
+    @Inject lateinit var itemsStore : ItemsStore
+    @Inject lateinit var itemsActionCreator : ItemsActionCreator
+    @Inject lateinit var topStoriesSubject: TopStoriesSubject
+
+    private val subscriber : Subscriber = {
+        val state = itemsStore.getState()
+        val items = state.items.map { item ->
+            Item(item)
+        }
+
+        itemsAdapter.clear()
+        itemsAdapter.addAll(items)
+        itemsAdapter.notifyDataSetChanged()
+    }
+
+    private lateinit var container: Container
+    private var page = 1
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        DaggerAppComponent.create().inject(this)
         super.onCreate(savedInstanceState)
         this.initialize()
         this.createView()
         this.createContainer()
-        subject.onNext(1)
     }
 
     private fun initialize() {
         itemsAdapter = ItemsAdapter(this, ArrayList<Item>())
-        subject = TopStoriesSubject().create(this, { item ->
-            ItemsActionCreator.add(item)
+        subject = topStoriesSubject.create(this, { item ->
+            itemsActionCreator.add(item)
         })
+        subject.onNext(page++)
     }
 
     private fun createContainer() {
-        val container = Container(arrayListOf(ItemsStore))
-        container.subscribe {
-            val state = ItemsStore.getState()
-            val items = state.items.map { item ->
-                Item(item)
-            }
-
-            itemsAdapter.clear()
-            itemsAdapter.addAll(items)
-            itemsAdapter.notifyDataSetChanged()
-            toast("List Updated")
-        }
+        container = Container(arrayListOf(itemsStore))
+        container.subscribe(subscriber)
     }
 
+    @SuppressLint("SetTextI18n")
     private fun createView() {
         verticalLayout {
             textView {
@@ -86,15 +99,17 @@ class MainActivity : AppCompatActivity() {
                 onClick {
                     val items = ArrayList<HashMap<String, String>>()
                     items.add(hashMapOf("title" to "hello"))
-                    ItemsActionCreator.addAll(items)
+
+                    itemsActionCreator.addAll(items)
                 }
             }
 
             button {
-                text = "Update list to 2 page"
+                text = "Update list to " + page.toString() + " page"
                 onClick {
-                    subject.onNext(2)
-                    subject.onComplete()
+                    subject.onNext(page++)
+                    text = "Update list to " + page.toString() + " page"
+                    toast("List Updated")
                 }
             }
 

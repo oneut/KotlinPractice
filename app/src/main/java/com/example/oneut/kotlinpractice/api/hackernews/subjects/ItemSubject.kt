@@ -5,9 +5,11 @@ import com.example.oneut.kotlinpractice.api.hackernews.Observables
 import com.firebase.client.Firebase
 import io.reactivex.subjects.PublishSubject
 import java.util.HashMap
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class ItemSubject {
-
+@Singleton
+class ItemSubject @Inject constructor() {
     fun create(context: Context, callback: (HashMap<String, String>) -> Unit): PublishSubject<Long> {
         Firebase.setAndroidContext(context)
 

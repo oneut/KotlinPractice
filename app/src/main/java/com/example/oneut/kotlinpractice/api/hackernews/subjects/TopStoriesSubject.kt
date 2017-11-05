@@ -6,9 +6,11 @@ import com.firebase.client.Firebase
 import io.reactivex.subjects.PublishSubject
 import io.reactivex.schedulers.Schedulers
 import java.util.HashMap
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class TopStoriesSubject {
-
+@Singleton
+class TopStoriesSubject @Inject constructor() {
     fun create(context: Context, callback: (HashMap<String, String>) -> Unit): PublishSubject<Int> {
         Firebase.setAndroidContext(context)
 
