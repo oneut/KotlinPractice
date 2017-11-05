@@ -11,5 +11,10 @@ This repository is practice. Therefore, there is a possibility that it is not a 
 ## Challenged
 + Flux(Original)
 
+## Next Challenge
+### Package
++ Retrofit
++ Moshi
+
 ## Other
 + The application may be stopped by Bug.
